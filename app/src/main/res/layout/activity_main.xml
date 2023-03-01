@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.MainActivity">
+
+    <ListView
+        android:id="@+id/listViewContact"
+        android:layout_width="389dp"
+        android:layout_height="513dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnAddContact"
+        android:layout_width="136dp"
+        android:layout_height="43dp"
+        android:layout_marginTop="72dp"
+        android:layout_marginEnd="16dp"
+        android:background="#68C3D3"
+        android:text="Add Contact ->"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listViewContact" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="113dp"
+        android:layout_height="43dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="72dp"
+        android:background="@color/disable"
+        android:enabled="false"
+        android:text="Delete"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listViewContact" />
+</android.support.constraint.ConstraintLayout>

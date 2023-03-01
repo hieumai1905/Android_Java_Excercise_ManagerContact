@@ -21,7 +21,7 @@
         android:layout_height="43dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="16dp"
-        android:background="#68C3D3"
+        android:background="#288E91"
         android:text="Add Contact ->"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/listViewContact" />

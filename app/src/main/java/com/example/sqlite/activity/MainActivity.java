@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -35,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int EDIT_CODE = 1002;
     private static int selectedIndex = -1;
     private ContactDatabase contactDatabase;
-    private AdapterView.OnItemLongClickListener onItemLongClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, EDIT_CODE);
                 break;
             case R.id.mnuDelete:
-                listContact.remove(selectedIndex);
+                listContact.remove(contact);
+                contactDatabase.removeContact(contact.getId());
                 Toast.makeText(this, "Delete " + contact.getName() + " success!", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.mnuCountName:
@@ -162,7 +161,12 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException("Error remove contact!");
             }
         });
-        listViewContact.setOnItemLongClickListener(onItemLongClickListener);
+        listViewContact.setOnItemLongClickListener((adapterView, view, i, l) -> {
+            Toast.makeText(MainActivity.this, "Select " +listContact.get(i).getName(), Toast.LENGTH_SHORT).show();
+            selectedIndex = i;
+            adapter.notifyDataSetChanged();
+            return false;
+        });
     }
 
     private void addContact() {
@@ -188,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = data;
             String name = intent.getStringExtra("name");
             String phone = intent.getStringExtra("phone");
-            listContact.add(new Contact((long) listContact.size() + 1, name, phone, "image1"));
+            Contact contact = new Contact((long)listContact.size() + 1, name, phone, "image1");
+            listContact.add(contact);
+            contactDatabase.addContact(contact);
             Toast.makeText(this, "Add new contact success!", Toast.LENGTH_SHORT).show();
         } else if (requestCode == EDIT_CODE && resultCode == 200) {
             Long id = data.getLongExtra("id", 0);
@@ -200,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                     contact.setPhone(phone);
                 }
             }
+            contactDatabase.updateContact(new Contact(id, name, phone));
             Toast.makeText(this, "Edit contact success!", Toast.LENGTH_SHORT).show();
         }
         adapter.notifyDataSetChanged();

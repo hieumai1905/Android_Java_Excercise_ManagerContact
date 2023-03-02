@@ -21,7 +21,7 @@ public class NewActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.new_contact);
-        int requestCode = 1001;
+        int requestCode = getIntent().getIntExtra("requestCode", 1001);
         _init(requestCode);
         addEvent(requestCode);
     }

@@ -12,10 +12,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.sqlite.DAO.ContactDatabase;
 import com.example.sqlite.R;
 import com.example.sqlite.adapter.Adapter;
 import com.example.sqlite.model.Contact;
@@ -31,11 +33,15 @@ public class MainActivity extends AppCompatActivity {
     private ListView listViewContact;
     public static final int ADD_CODE = 1001;
     public static final int EDIT_CODE = 1002;
+    private static int selectedIndex = -1;
+    private ContactDatabase contactDatabase;
+    private AdapterView.OnItemLongClickListener onItemLongClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        contactDatabase = new ContactDatabase(this);
         _init();
         addEvent();
     }
@@ -51,17 +57,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+        Contact contact = listContact.get(selectedIndex);
         switch (id) {
             case R.id.mnuEdit:
-
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, NewActivity.class);
+                intent.putExtra("id", contact.getId());
+                intent.putExtra("name", contact.getName());
+                intent.putExtra("phone", contact.getPhone());
+                intent.putExtra("requestCode", EDIT_CODE);
+                startActivityForResult(intent, EDIT_CODE);
                 break;
             case R.id.mnuDelete:
-
+                listContact.remove(selectedIndex);
+                Toast.makeText(this, "Delete " + contact.getName() + " success!", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.mnuCountName:
+                int lastIndex = contact.getName().lastIndexOf(" ");
+                String name = contact.getName().substring(lastIndex + 1);
+                int count = 0;
+                for (Contact c : listContact) {
+                    if (c.getName().contains(name)) {
+                        count++;
+                    }
+                }
+                Toast.makeText(this, "Count name " + name + " is " + count, Toast.LENGTH_SHORT).show();
                 break;
         }
-        return super.onContextItemSelected(item);
+        adapter.notifyDataSetChanged();
+        return false;
     }
 
     @Override
@@ -107,11 +131,22 @@ public class MainActivity extends AppCompatActivity {
         listViewContact = findViewById(R.id.listViewContact);
         btnAddContact = findViewById(R.id.btnAddContact);
         btnDeleteContact = findViewById(R.id.btnDelete);
+        loadData();
         adapter = new Adapter(listContact);
-        addRecordToList();
         listViewContact.setAdapter(adapter);
         registerForContextMenu(listViewContact);
+        contactDatabase = new ContactDatabase(this);
     }
+
+    private void loadData() {
+//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
+//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
+//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
+//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
+//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
+        listContact = contactDatabase.getAllContact();
+    }
+
 
     private void addEvent() {
         btnAddContact.setOnClickListener(view -> {
@@ -127,37 +162,23 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException("Error remove contact!");
             }
         });
-        listViewContact.setOnItemClickListener((adapterView, view, i, l) -> {
-            Toast.makeText(MainActivity.this, "New contact", Toast.LENGTH_SHORT).show();
-            adapter.notifyDataSetChanged();
-        });
-        listViewContact.setOnItemLongClickListener((adapterView, view, i, l) -> {
-            Toast.makeText(MainActivity.this, "New contact", Toast.LENGTH_SHORT).show();
-            adapter.notifyDataSetChanged();
-            return false;
-        });
+        listViewContact.setOnItemLongClickListener(onItemLongClickListener);
     }
 
     private void addContact() {
         Intent intent = new Intent();
         intent.setClass(MainActivity.this, NewActivity.class);
+        intent.putExtra("requestCode", ADD_CODE);
         startActivityForResult(intent, ADD_CODE);
     }
 
     private void deleteContactWithListChecked(List<Contact> listChecked) {
         for (Contact contact : listChecked) {
             listContact.remove(contact);
+            contactDatabase.removeContact(contact.getId());
         }
         adapter.clearListChecked();
         adapter.notifyDataSetChanged();
-    }
-
-    private void addRecordToList() {
-        listContact.add(new Contact((long) listContact.size() + 1, "Nguyen Van B", "0123456789", "image2"));
-        listContact.add(new Contact((long) listContact.size() + 1, "Nguyen Van A", "0123456789", "image1"));
-        listContact.add(new Contact((long) listContact.size() + 1, "Nguyen Van C", "0123456789", "image3"));
-        listContact.add(new Contact((long) listContact.size() + 1, "Nguyen Van D", "0123456789", "image4"));
-        listContact.add(new Contact((long) listContact.size() + 1, "Nguyen Van E", "0123456789", "image5"));
     }
 
     @Override
@@ -168,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             String name = intent.getStringExtra("name");
             String phone = intent.getStringExtra("phone");
             listContact.add(new Contact((long) listContact.size() + 1, name, phone, "image1"));
+            Toast.makeText(this, "Add new contact success!", Toast.LENGTH_SHORT).show();
         } else if (requestCode == EDIT_CODE && resultCode == 200) {
             Long id = data.getLongExtra("id", 0);
             String name = data.getStringExtra("name");
@@ -178,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     contact.setPhone(phone);
                 }
             }
+            Toast.makeText(this, "Edit contact success!", Toast.LENGTH_SHORT).show();
         }
         adapter.notifyDataSetChanged();
     }

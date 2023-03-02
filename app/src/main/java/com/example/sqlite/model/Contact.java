@@ -1,5 +1,10 @@
 package com.example.sqlite.model;
 
+
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
 public class Contact {
     private Long id;
     private String name;
@@ -52,5 +57,19 @@ public class Contact {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public void call(Context context){
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + this.getPhone()));
+        context.startActivity(intent);
+    }
+
+    public void sms(Context context) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("sms:" + this.getPhone()));
+        context.startActivity(intent);
     }
 }

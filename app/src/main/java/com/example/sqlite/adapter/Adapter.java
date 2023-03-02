@@ -1,8 +1,6 @@
 package com.example.sqlite.adapter;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -83,15 +81,11 @@ public class Adapter extends BaseAdapter {
         });
 
         viewContact.findViewById(R.id.btnCall).setOnClickListener(view1 -> {
-            Intent intentCall = new Intent();
-            intentCall.setAction(Intent.ACTION_DIAL);
-            intentCall.setData(Uri.parse("tel:"+ listContact.get(i).getPhone()));
+            listContact.get(i).call(context);
         });
 
         viewContact.findViewById(R.id.btnSms).setOnClickListener(view1 -> {
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("sms:" + listContact.get(i).getPhone()));
-            context.startActivity(intent);
+            listContact.get(i).sms(context);
         });
         return viewContact;
     }

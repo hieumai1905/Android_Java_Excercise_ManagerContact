@@ -17,12 +17,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.sqlite.DAO.ContactDatabase;
 import com.example.sqlite.R;
 import com.example.sqlite.adapter.Adapter;
 import com.example.sqlite.model.Contact;
+import com.example.sqlite.service.contact.ContactService;
+import com.example.sqlite.service.contact.IContactService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,17 +34,27 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_CODE = 1001;
     public static final int EDIT_CODE = 1002;
     private static int selectedIndex = -1;
-    private ContactDatabase contactDatabase;
+    private IContactService contactService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        contactDatabase = new ContactDatabase(this);
         _init();
         addEvent();
     }
 
+    private void _init() {
+        listViewContact = findViewById(R.id.listViewContact);
+        btnAddContact = findViewById(R.id.btnAddContact);
+        btnDeleteContact = findViewById(R.id.btnDelete);
+        contactService = ContactService.getInstanceContactService(this);
+        listContact = contactService.findAll();
+        adapter = new Adapter(listContact, this);
+        listViewContact.setAdapter(adapter);
+        registerForContextMenu(listViewContact);
+
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -59,10 +69,7 @@ public class MainActivity extends AppCompatActivity {
         Contact contact = listContact.get(selectedIndex);
         switch (id) {
             case R.id.mnuCall:
-                Intent intentCall = new Intent();
-                intentCall.setAction(Intent.ACTION_DIAL);
-                intentCall.setData(Uri.parse("tel:" + contact.getPhone()));
-                startActivity(intentCall);
+                contact.call(this);
                 break;
             case R.id.mnuSms:
                 Intent intentSms = new Intent();
@@ -81,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.mnuDelete:
                 listContact.remove(contact);
-                contactDatabase.removeContact(contact.getId());
+                contactService.remove(contact.getId());
                 Toast.makeText(this, "Delete " + contact.getName() + " success!", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.mnuCountName:
@@ -133,32 +140,13 @@ public class MainActivity extends AppCompatActivity {
                     return lastName2.compareTo(lastName1);
                 });
                 break;
+            case R.id.mnuFind:
+
+                break;
         }
         adapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(item);
     }
-
-    private void _init() {
-        listContact = new ArrayList<>();
-        listViewContact = findViewById(R.id.listViewContact);
-        btnAddContact = findViewById(R.id.btnAddContact);
-        btnDeleteContact = findViewById(R.id.btnDelete);
-        loadData();
-        adapter = new Adapter(listContact, this);
-        listViewContact.setAdapter(adapter);
-        registerForContextMenu(listViewContact);
-        contactDatabase = new ContactDatabase(this);
-    }
-
-    private void loadData() {
-//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
-//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
-//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
-//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
-//        contactDatabase.addContact(new Contact((long)listContact.size() + 1, "mai van hieu", "023432"));
-        listContact = contactDatabase.getAllContact();
-    }
-
 
     private void addEvent() {
         btnAddContact.setOnClickListener(view -> {
@@ -177,11 +165,9 @@ public class MainActivity extends AppCompatActivity {
         listViewContact.setOnItemLongClickListener((adapterView, view, i, l) -> {
             Toast.makeText(MainActivity.this, "Select " +listContact.get(i).getName(), Toast.LENGTH_SHORT).show();
             selectedIndex = i;
-            adapter.notifyDataSetChanged();
             return false;
         });
     }
-
     private void addContact() {
         Intent intent = new Intent();
         intent.setClass(MainActivity.this, NewActivity.class);
@@ -192,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
     private void deleteContactWithListChecked(List<Contact> listChecked) {
         for (Contact contact : listChecked) {
             listContact.remove(contact);
-            contactDatabase.removeContact(contact.getId());
+            contactService.remove(contact.getId());
         }
         adapter.clearListChecked();
         adapter.notifyDataSetChanged();
@@ -206,8 +192,8 @@ public class MainActivity extends AppCompatActivity {
             String name = intent.getStringExtra("name");
             String phone = intent.getStringExtra("phone");
             Contact contact = new Contact((long)listContact.size() + 1, name, phone, "image1");
+            contactService.add(contact);
             listContact.add(contact);
-            contactDatabase.addContact(contact);
             Toast.makeText(this, "Add new contact success!", Toast.LENGTH_SHORT).show();
         } else if (requestCode == EDIT_CODE && resultCode == 200) {
             Long id = data.getLongExtra("id", 0);
@@ -219,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     contact.setPhone(phone);
                 }
             }
-            contactDatabase.updateContact(new Contact(id, name, phone));
+            contactService.update(new Contact(id, name, phone, "image1"));
             Toast.makeText(this, "Edit contact success!", Toast.LENGTH_SHORT).show();
         }
         adapter.notifyDataSetChanged();

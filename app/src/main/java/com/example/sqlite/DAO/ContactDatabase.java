@@ -12,22 +12,30 @@ import com.example.sqlite.model.Contact;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContactDatabase extends SQLiteOpenHelper {
+public class ContactDatabase extends SQLiteOpenHelper implements IHandlerDatabse<Contact, Long> {
     public static final String DB_NAME = "SQLite_database";
     public static final int DB_VERSION = 1;
     public static final String TABLE_NAME = "db_contact";
     public static final String KEY_ID = "id";
     public static final String KEY_NAME = "name";
     public static final String KEY_PHONE = "phone";
+    private static ContactDatabase _instance;
 
-   public ContactDatabase(Context context){
+   private ContactDatabase(Context context){
         super(context, DB_NAME, null, DB_VERSION);
+   }
+
+   public static ContactDatabase getInstance(Context context){
+       if(_instance== null){
+           _instance = new ContactDatabase(context);
+       }
+       return _instance;
    }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         try{
-            String sql = String.format("create table [if not exists] %s(%s INTEGER PRIMARY KEY, %s TINYTEXT NOT NULL, %s TINYTEXT NOT NULL);"
+            String sql = String.format("create table [if not exists] %s(%s INTEGER PRIMARY KEY increase, %s TINYTEXT NOT NULL, %s TINYTEXT NOT NULL);"
                     , TABLE_NAME, KEY_ID, KEY_NAME, KEY_PHONE);
             sqLiteDatabase.execSQL(sql);
         } catch (SQLException e) {
@@ -74,7 +82,7 @@ public class ContactDatabase extends SQLiteOpenHelper {
         return null;
     }
 
-    public void updateContact(Contact contact){
+    public void updateContact(Contact contact)throws RuntimeException {
        SQLiteDatabase db = this.getWritableDatabase();
        ContentValues values = new ContentValues();
        values.put(KEY_NAME, contact.getName());

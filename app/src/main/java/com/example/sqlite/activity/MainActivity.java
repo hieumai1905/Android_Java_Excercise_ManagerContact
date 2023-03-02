@@ -1,6 +1,7 @@
 package com.example.sqlite.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -57,6 +58,18 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         Contact contact = listContact.get(selectedIndex);
         switch (id) {
+            case R.id.mnuCall:
+                Intent intentCall = new Intent();
+                intentCall.setAction(Intent.ACTION_DIAL);
+                intentCall.setData(Uri.parse("tel:" + contact.getPhone()));
+                startActivity(intentCall);
+                break;
+            case R.id.mnuSms:
+                Intent intentSms = new Intent();
+                intentSms.setAction(Intent.ACTION_SENDTO);
+                intentSms.setData(Uri.parse("sms:" + contact.getPhone()));
+                startActivity(intentSms);
+                break;
             case R.id.mnuEdit:
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, NewActivity.class);
@@ -131,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         btnAddContact = findViewById(R.id.btnAddContact);
         btnDeleteContact = findViewById(R.id.btnDelete);
         loadData();
-        adapter = new Adapter(listContact);
+        adapter = new Adapter(listContact, this);
         listViewContact.setAdapter(adapter);
         registerForContextMenu(listViewContact);
         contactDatabase = new ContactDatabase(this);

@@ -1,7 +1,6 @@
 package com.example.sqlite.activity;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.sqlite.R;
 import com.example.sqlite.adapter.Adapter;
+import com.example.sqlite.handle.CompareName;
 import com.example.sqlite.model.Contact;
 import com.example.sqlite.service.contact.ContactService;
 import com.example.sqlite.service.contact.IContactService;
@@ -72,10 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 contact.call(this);
                 break;
             case R.id.mnuSms:
-                Intent intentSms = new Intent();
-                intentSms.setAction(Intent.ACTION_SENDTO);
-                intentSms.setData(Uri.parse("sms:" + contact.getPhone()));
-                startActivity(intentSms);
+                contact.sms(this);
                 break;
             case R.id.mnuEdit:
                 Intent intent = new Intent();
@@ -122,23 +119,11 @@ public class MainActivity extends AppCompatActivity {
         switch (id) {
             case R.id.sortIncreaseName:
                 Toast.makeText(this, "Sort increase name", Toast.LENGTH_SHORT).show();
-                listContact.sort((o1, o2) -> {
-                    int lastIndex = o1.getName().lastIndexOf(" ");
-                    String lastName1 = o1.getName().substring(lastIndex + 1);
-                    lastIndex = o2.getName().lastIndexOf(" ");
-                    String lastName2 = o2.getName().substring(lastIndex + 1);
-                    return lastName1.compareTo(lastName2);
-                });
+                listContact.sort(new CompareName());
                 break;
             case R.id.sortDecreaseName:
                 Toast.makeText(this, "Sort decrease name", Toast.LENGTH_SHORT).show();
-                listContact.sort((o1, o2) -> {
-                    int lastIndex = o1.getName().lastIndexOf(" ");
-                    String lastName1 = o1.getName().substring(lastIndex + 1);
-                    lastIndex = o2.getName().lastIndexOf(" ");
-                    String lastName2 = o2.getName().substring(lastIndex + 1);
-                    return lastName2.compareTo(lastName1);
-                });
+                listContact.sort(new CompareName().reversed());
                 break;
             case R.id.mnuFind:
 

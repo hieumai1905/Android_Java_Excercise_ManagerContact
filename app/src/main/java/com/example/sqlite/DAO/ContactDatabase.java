@@ -21,27 +21,28 @@ public class ContactDatabase extends SQLiteOpenHelper implements IHandlerDatabse
     public static final String KEY_PHONE = "phone";
     private static ContactDatabase _instance;
 
-   private ContactDatabase(Context context){
+    private ContactDatabase(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
-   }
+    }
 
-   public static ContactDatabase getInstance(Context context){
-       if(_instance== null){
-           _instance = new ContactDatabase(context);
-       }
-       return _instance;
-   }
+    public static ContactDatabase getInstance(Context context) {
+        if (_instance == null) {
+            _instance = new ContactDatabase(context);
+        }
+        return _instance;
+    }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        try{
-            String sql = String.format("create table [if not exists] %s(%s INTEGER PRIMARY KEY increase, %s TINYTEXT NOT NULL, %s TINYTEXT NOT NULL);"
-                    , TABLE_NAME, KEY_ID, KEY_NAME, KEY_PHONE);
+        try {
+            String sql = String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT NOT NULL, %s TEXT NOT NULL);",
+                    TABLE_NAME, KEY_ID, KEY_NAME, KEY_PHONE);
             sqLiteDatabase.execSQL(sql);
         } catch (SQLException e) {
-            throw new RuntimeException("Error create table " + TABLE_NAME);
+            throw new RuntimeException("Error creating table " + TABLE_NAME, e);
         }
     }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
@@ -50,7 +51,7 @@ public class ContactDatabase extends SQLiteOpenHelper implements IHandlerDatabse
         onCreate(sqLiteDatabase);
     }
 
-    public void addContact(Contact contact){
+    public void addContact(Contact contact) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_NAME, contact.getName());
@@ -58,8 +59,9 @@ public class ContactDatabase extends SQLiteOpenHelper implements IHandlerDatabse
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
-    public Contact getContact(Long id){
-       SQLiteDatabase db = this.getReadableDatabase();
+
+    public Contact getContact(Long id) {
+        SQLiteDatabase db = this.getReadableDatabase();
         String sql = String.format("SELECT * FROM %s WHERE % = %d", TABLE_NAME, KEY_ID, id);
         Cursor cursor = db.rawQuery(sql, null);
         cursor.moveToFirst();
@@ -68,31 +70,31 @@ public class ContactDatabase extends SQLiteOpenHelper implements IHandlerDatabse
         return contact;
     }
 
-    public List<Contact> getAllContact(){
-        SQLiteDatabase db  = this.getReadableDatabase();
+    public List<Contact> getAllContact() {
+        SQLiteDatabase db = this.getReadableDatabase();
         List<Contact> listContact = new ArrayList<Contact>();
         String sql = String.format("SELECT * FROM %s", TABLE_NAME);
         Cursor cursor = db.rawQuery(sql, null);
-        if(cursor != null) {
-            while(cursor.moveToNext()){
-               listContact.add(new Contact(cursor.getLong(0), cursor.getString(1), cursor.getString(2)));
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                listContact.add(new Contact(cursor.getLong(0), cursor.getString(1), cursor.getString(2)));
             }
             return listContact;
         }
         return null;
     }
 
-    public void updateContact(Contact contact)throws RuntimeException {
-       SQLiteDatabase db = this.getWritableDatabase();
-       ContentValues values = new ContentValues();
-       values.put(KEY_NAME, contact.getName());
-       values.put(KEY_PHONE, contact.getPhone());
-        db.update(TABLE_NAME, values, KEY_ID +" = ?", new String[]{String.valueOf(contact.getId())});
+    public void updateContact(Contact contact) throws RuntimeException {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_NAME, contact.getName());
+        values.put(KEY_PHONE, contact.getPhone());
+        db.update(TABLE_NAME, values, KEY_ID + " = ?", new String[]{String.valueOf(contact.getId())});
         db.close();
     }
 
-    public void removeContact(Long id){
-       SQLiteDatabase db = this.getReadableDatabase();
-       db.delete(TABLE_NAME, KEY_ID + " = ?", new String[]{String.valueOf(id)});
+    public void removeContact(Long id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.delete(TABLE_NAME, KEY_ID + " = ?", new String[]{String.valueOf(id)});
     }
 }

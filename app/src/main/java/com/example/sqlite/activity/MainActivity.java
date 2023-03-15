@@ -45,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void _init() {
+        contactService = ContactService.getInstanceContactService(this);
         listViewContact = findViewById(R.id.listViewContact);
         btnAddContact = findViewById(R.id.btnAddContact);
         btnDeleteContact = findViewById(R.id.btnDelete);
-        contactService = ContactService.getInstanceContactService(this);
         listContact = contactService.findAll();
         adapter = new Adapter(listContact, this);
         listViewContact.setAdapter(adapter);
